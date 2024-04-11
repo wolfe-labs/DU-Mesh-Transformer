@@ -1,0 +1,35 @@
+{
+  "name": "@wolfe-labs/du-gltf-texture-converter",
+  "version": "0.0.1",
+  "description": "Enhances glTF files exported by Dual Universe's Mesh Exporter so they have textures applied to them",
+  "main": "lib/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "bin": {
+    "du-gltf": "index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wolfe-labs/DU-GLTF-Texture-Converter.git"
+  },
+  "keywords": [
+    "dual",
+    "universe",
+    "gltf",
+    "mesh",
+    "exporter"
+  ],
+  "author": "",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/wolfe-labs/DU-GLTF-Texture-Converter/issues"
+  },
+  "homepage": "https://github.com/wolfe-labs/DU-GLTF-Texture-Converter#readme",
+  "dependencies": {
+    "@gltf-transform/core": "^3.10.1",
+    "@gltf-transform/extensions": "^3.10.1",
+    "@gltf-transform/functions": "^3.10.1"
+  }
+}
