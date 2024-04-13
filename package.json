@@ -30,6 +30,8 @@
   "dependencies": {
     "@gltf-transform/core": "^3.10.1",
     "@gltf-transform/extensions": "^3.10.1",
-    "@gltf-transform/functions": "^3.10.1"
+    "@gltf-transform/functions": "^3.10.1",
+    "dds-ktx-parser": "^1.0.1",
+    "jimp": "^0.22.12"
   }
 }

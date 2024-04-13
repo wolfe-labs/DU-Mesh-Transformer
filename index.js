@@ -53,7 +53,9 @@ app(async function main(modelPath, customGameDirectory) {
   const result = await convert({
     sourceFile: modelPath,
     destinationFile: path.join(path.dirname(modelPath), `${path.basename(modelPath, path.extname(modelPath))}.out.glb`),
+    // destinationFile: path.join(path.dirname(modelPath), `${path.basename(modelPath, path.extname(modelPath))}.out.gltf`),
     gameDirectory: gameDirectoryPath,
-    itemDefinitions: itemData
+    itemDefinitions: itemData,
+    textureMode: 'textured',
   });
 });
