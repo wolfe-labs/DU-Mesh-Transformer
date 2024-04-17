@@ -56,6 +56,8 @@ app(async function main(modelPath, customGameDirectory) {
     // destinationFile: path.join(path.dirname(modelPath), `${path.basename(modelPath, path.extname(modelPath))}.out.gltf`),
     gameDirectory: gameDirectoryPath,
     itemDefinitions: itemData,
-    // textureMode: 'flat',
+    textureMode: 'textured',
+    convertTextures: true,
+    splitMeshes: true,
   });
 });

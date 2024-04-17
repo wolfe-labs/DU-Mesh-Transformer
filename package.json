@@ -33,6 +33,7 @@
     "@gltf-transform/functions": "^3.10.1",
     "dds-ktx-parser": "^1.0.1",
     "gl-matrix": "^3.4.3",
-    "jimp": "^0.22.12"
+    "jimp": "^0.22.12",
+    "vector-math": "^1.1.1"
   }
 }
