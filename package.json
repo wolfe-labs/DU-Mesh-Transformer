@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wolfe-labs/DU-GLTF-Texture-Converter.git"
+    "url": "git+https://github.com/wolfe-labs/DU-Mesh-Transformer.git"
   },
   "keywords": [
     "dual",
@@ -25,9 +25,9 @@
   "author": "",
   "license": "Unlicense",
   "bugs": {
-    "url": "https://github.com/wolfe-labs/DU-GLTF-Texture-Converter/issues"
+    "url": "https://github.com/wolfe-labs/DU-Mesh-Transformer/issues"
   },
-  "homepage": "https://github.com/wolfe-labs/DU-GLTF-Texture-Converter#readme",
+  "homepage": "https://github.com/wolfe-labs/DU-Mesh-Transformer#readme",
   "dependencies": {
     "@gltf-transform/core": "^3.10.1",
     "@gltf-transform/extensions": "^3.10.1",
