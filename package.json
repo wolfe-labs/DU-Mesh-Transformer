@@ -4,12 +4,12 @@
   "description": "Enhances glTF files exported by Dual Universe's Mesh Exporter so they have proper colors and textures applied to them",
   "main": "lib/index.js",
   "scripts": {
-    "start": "node dist/bin/index.js",
+    "start": "node bin/index.js",
     "build": "npx tsc",
     "dev": "npx tsc --watch"
   },
   "bin": {
-    "du-gltf": "dist/bin/index.js"
+    "du-gltf": "bin/index.js"
   },
   "repository": {
     "type": "git",
