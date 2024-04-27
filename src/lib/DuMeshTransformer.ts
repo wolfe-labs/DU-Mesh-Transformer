@@ -9,6 +9,7 @@ import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import BaseColorsTransform from './commands/BaseColorsTransform';
 
 import { EventType, MaterialDefinition, MaterialDefinitions, MaterialPair, ProcessingQueueCommand, ProcessingQueueCommandFunction } from './types';
+import TexturesTransform from './commands/TexturesTransform';
 
 export default class DuMeshTransformer {
   // Keeps track of all commands on the current processing queue
@@ -19,6 +20,9 @@ export default class DuMeshTransformer {
 
   // This is an event emitter for debugging
   private eventEmitter = new EventEmitter();
+
+  // Let's store cached data here
+  private cachedData: Record<string, any> = {};
 
   ///////////////////////////////////////////////////////////////////
   // Internal API
@@ -75,6 +79,13 @@ export default class DuMeshTransformer {
   ///////////////////////////////////////////////////////////////////
   // Public API
   ///////////////////////////////////////////////////////////////////
+
+  /**
+   * Gets the underlying glTF document
+   */
+  public getDocument(): Document {
+    return this.gltfDocument;
+  }
 
   /**
    * Returns a list of material definitions
@@ -198,12 +209,68 @@ export default class DuMeshTransformer {
     }
   }
 
+  /**
+   * Accesses cached data, optionally providing a function to update it when nothing is found
+   */
+  public async remember<T>(key: string, fn?: () => T) {
+    if (this.cachedData[key] === undefined && fn) {
+      this.cachedData[key] = await fn();
+    }
+
+    return this.cachedData[key];
+  }
+
+  /**
+   * Accesses cached data, optionally providing a function to update it when nothing is found
+   * This variant allows for remembering multiple things under the same "category"
+   */
+  public async rememberMany<T>(category: string, key: string, fn?: () => T) {
+    if (this.cachedData[category] === undefined) {
+      this.cachedData[category] = {};
+    }
+
+    if (this.cachedData[category][key] === undefined && fn) {
+      this.cachedData[category][key] = await fn();
+    }
+
+    return this.cachedData[category][key];
+  }
+
+  /**
+   * Overwrites cached data
+   */
+  public setRemember<T>(key: string, data: T) {
+    this.cachedData[key] = data;
+  }
+
+  /**
+   * Overwrites cached data
+   * This variant allows for caching multiple things under the same "category"
+   */
+  public setRememberMany<T>(category: string, key: string, data: T) {
+    if (this.cachedData[category] === undefined) {
+      this.cachedData[category] = {};
+    }
+
+    this.cachedData[category][key] = data;
+  }
+
   ///////////////////////////////////////////////////////////////////
   // Transforms
   ///////////////////////////////////////////////////////////////////
 
+  /**
+   * Applies the base material colors to the model
+   */
   public withBaseColors() {
     return this.queue(BaseColorsTransform);
+  }
+
+  /**
+   * Applies textures to the model
+   */
+  public withTextures() {
+    return this.queue(TexturesTransform);
   }
 
   ///////////////////////////////////////////////////////////////////

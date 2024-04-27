@@ -13,11 +13,11 @@ export enum EventType {
   WARNING = 'warning',
 };
 
-export enum MaterialTextureTypes {
-  COLOR = 'color',
-  NORMAL = 'normal',
-  METALLIC_ROUGHNESS_AMBIENT_OCCLUSION = 'mrao',
-  EMISSIVE = 'emissive',
+export const MaterialTextureTypes: Record<string, string> = {
+  COLOR: 'color',
+  NORMAL_MAP: 'normal',
+  METALLIC_ROUGHNESS_AMBIENT_OCCLUSION: 'mrao',
+  EMISSIVE: 'emissive',
 };
 
 export type MaterialDefinition = {
@@ -28,7 +28,7 @@ export type MaterialDefinition = {
   soundMaterial: string;
   texture: string;
   albedo: vec3;
-  files: Record<MaterialTextureTypes, string>;
+  files: Record<keyof typeof MaterialTextureTypes, string>;
 };
 export type MaterialDefinitions = {
   items: Record<string, MaterialDefinition>;

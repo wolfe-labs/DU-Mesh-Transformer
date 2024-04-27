@@ -23,6 +23,6 @@ app(async function main(modelPath, customGameDirectory) {
 
   // Processes our mesh as desired
   await meshTransformer
-    .withBaseColors()
+    .withTextures()
     .saveToFile(path.join(dir, `${basename}.out.glb`), false);
 });
