@@ -30,7 +30,9 @@ You can also create your own wrapper around the package and customize all kind o
 To do so, install it into your Node project with `npm i --save @wolfe-labs/du-gltf` and follow the example below to get started:
 
 ```js
-import DuMeshTransformer from '@wolfe-labs/du-gltf';
+// You can also use the module syntax:
+// import DuMeshTransformer from '@wolfe-labs/du-gltf';
+const DuMeshTransformer = require('@wolfe-labs/du-gltf').default;
 
 // This function is a wrapper so we can use async/await
 async function convert(file) {
