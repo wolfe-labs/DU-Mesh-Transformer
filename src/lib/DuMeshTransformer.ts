@@ -194,7 +194,10 @@ export default class DuMeshTransformer {
 
     // Gets the file names
     const dir = path.dirname(file);
-    const basename = path.basename(file, path.extname(file));
+    const ext = path.extname(file).toLowerCase();
+    const basename = ['.glb', '.gltf'].includes(ext)
+      ? path.basename(file, path.extname(file))
+      : path.basename(file);
 
     // Writes the document
     if (saveAsJson) {
