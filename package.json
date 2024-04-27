@@ -1,7 +1,7 @@
 {
-  "name": "@wolfe-labs/du-gltf-texture-converter",
+  "name": "@wolfe-labs/du-gltf",
   "version": "1.0.0",
-  "description": "Enhances glTF files exported by Dual Universe's Mesh Exporter so they have textures applied to them",
+  "description": "Enhances glTF files exported by Dual Universe's Mesh Exporter so they have proper colors and textures applied to them",
   "main": "lib/index.js",
   "scripts": {
     "start": "node dist/bin/index.js",
