@@ -1,4 +1,4 @@
-import { Document, vec3 } from '@gltf-transform/core';
+import { Document, Material, vec3 } from '@gltf-transform/core';
 import DuMeshTransformer from './DuMeshTransformer';
 
 export type ProcessingQueueCommandParameters = { document: Document, transformer: DuMeshTransformer };
@@ -10,6 +10,7 @@ export type ProcessingQueueCommand = {
 
 export enum EventType {
   DEBUG = 'debug',
+  WARNING = 'warning',
 };
 
 export enum MaterialTextureTypes {
@@ -32,3 +33,4 @@ export type MaterialDefinition = {
 export type MaterialDefinitions = {
   items: Record<string, MaterialDefinition>;
 };
+export type MaterialPair = { material: Material, gameMaterial: MaterialDefinition };

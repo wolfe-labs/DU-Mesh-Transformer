@@ -15,6 +15,7 @@ app(async function main(modelPath, customGameDirectory) {
 
   // Print events
   meshTransformer.events().on(EventType.DEBUG, message => console.log('[DEBUG]', message));
+  meshTransformer.events().on(EventType.WARNING, message => console.warn('[WARNING]', message));
 
   // Gets the file names
   const dir = path.dirname(modelPath);

@@ -4,11 +4,11 @@ import { env } from 'process';
 import { existsSync as fileExists, promises as fs } from 'fs';
 import EventEmitter from 'node:events';
 
-import { Document, JSONDocument, Material, NodeIO, PlatformIO } from '@gltf-transform/core';
+import { Document, JSONDocument, Material, NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import BaseColorsTransform from './commands/BaseColorsTransform';
 
-import { EventType, MaterialDefinition, MaterialDefinitions, ProcessingQueueCommand, ProcessingQueueCommandFunction } from './types';
+import { EventType, MaterialDefinition, MaterialDefinitions, MaterialPair, ProcessingQueueCommand, ProcessingQueueCommandFunction } from './types';
 
 export default class DuMeshTransformer {
   // Keeps track of all commands on the current processing queue
@@ -104,6 +104,22 @@ export default class DuMeshTransformer {
     return this.getGameMaterialFromItemId(
       this.getGameItemIdFromGltfMaterial(material)
     );
+  }
+
+  /**
+   * Returns materials who have game materials paired to them
+   */
+  public getGltfMaterialsWithGameMaterials(): MaterialPair[]
+  {
+    return this.gltfDocument.getRoot().listMaterials()
+      .map((material) => {
+        const gameMaterial = this.getGameMaterialFromGltfMaterial(material);
+        
+        return gameMaterial
+          ? { material: material, gameMaterial: gameMaterial }
+          : null;
+      })
+      .filter((pair) => !!pair) as MaterialPair[];
   }
 
   /**
