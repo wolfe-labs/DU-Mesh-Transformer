@@ -1,4 +1,5 @@
 import { vec4 } from '@gltf-transform/core';
+
 import {
   ProcessingQueueCommandParameters as CommandParams,
   EventType as EventType

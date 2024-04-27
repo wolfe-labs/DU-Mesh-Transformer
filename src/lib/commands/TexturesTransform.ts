@@ -1,14 +1,14 @@
 import path from 'path';
 import { existsSync as fileExists, promises as fs } from 'fs';
 
-import { Texture, vec4 } from '@gltf-transform/core';
+import { Texture } from '@gltf-transform/core';
+
 import {
   ProcessingQueueCommandParameters as CommandParams,
   EventType as EventType,
   MaterialDefinition,
   MaterialTextureTypes
 } from '../types';
-
 import DuMeshTransformer from '../DuMeshTransformer';
 import { findCommonWords } from '../CommonWords';
 import RgbaBuffer from '../RgbaBuffer';

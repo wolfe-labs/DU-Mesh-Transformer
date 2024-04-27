@@ -24,5 +24,6 @@ app(async function main(modelPath, customGameDirectory) {
   // Processes our mesh as desired
   await meshTransformer
     .withTextures()
+    .withUvMaps()
     .saveToFile(path.join(dir, `${basename}.out.glb`), false);
 });

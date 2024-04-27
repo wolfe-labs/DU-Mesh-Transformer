@@ -4,12 +4,13 @@ import { env } from 'process';
 import { existsSync as fileExists, promises as fs } from 'fs';
 import EventEmitter from 'node:events';
 
-import { Document, JSONDocument, Material, NodeIO } from '@gltf-transform/core';
+import { Document, JSONDocument, Material, NodeIO, Root } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import BaseColorsTransform from './commands/BaseColorsTransform';
 
 import { EventType, MaterialDefinition, MaterialDefinitions, MaterialPair, ProcessingQueueCommand, ProcessingQueueCommandFunction } from './types';
 import TexturesTransform from './commands/TexturesTransform';
+import CreateUvMapsTransform from './commands/CreateUvMapsTransfrom';
 
 export default class DuMeshTransformer {
   // Keeps track of all commands on the current processing queue
@@ -85,6 +86,13 @@ export default class DuMeshTransformer {
    */
   public getDocument(): Document {
     return this.gltfDocument;
+  }
+
+  /**
+   * Gets the underlying glTF document
+   */
+  public getDocumentRoot(): Root {
+    return this.getDocument().getRoot();
   }
 
   /**
@@ -271,6 +279,13 @@ export default class DuMeshTransformer {
    */
   public withTextures() {
     return this.queue(TexturesTransform);
+  }
+
+  /**
+   * Applies textures to the model
+   */
+  public withUvMaps({ swapYZ = false, textureSizeInMeters = 2.000, voxelOffsetSize = 0.125 } = {}) {
+    return this.queue(CreateUvMapsTransform, ...arguments);
   }
 
   ///////////////////////////////////////////////////////////////////
