@@ -1,4 +1,4 @@
-# glTF Converter for Dual Universe
+# Mesh Transformer for Dual Universe (du-gltf)
 🎨 Enhances glTF files exported by Dual Universe's Mesh Exporter so they have proper colors and textures applied to them
 
 ## Installation and Usage
