@@ -30,6 +30,13 @@ export default class DuMeshTransformer {
   }
 
   /**
+   * Queues a custom command for transforming the document
+   */
+  public queueTransform(command: ProcessingQueueCommandFunction, ...args: any[]): DuMeshTransformer {
+    return this.queue(command, args);
+  }
+
+  /**
    * Queues a command for transforming the document
    */
   private queue(command: ProcessingQueueCommandFunction, ...args: any[]): DuMeshTransformer {
