@@ -4,10 +4,11 @@ import { env } from 'process';
 import { existsSync as fileExists, promises as fs } from 'fs';
 import EventEmitter from 'node:events';
 
-import { Document, JSONDocument, NodeIO, PlatformIO } from '@gltf-transform/core';
+import { Document, JSONDocument, Material, NodeIO, PlatformIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import BaseColorsTransform from './commands/BaseColorsTransform';
-import { EventType, ProcessingQueueCommand, ProcessingQueueCommandFunction } from './types';
+
+import { EventType, MaterialDefinition, MaterialDefinitions, ProcessingQueueCommand, ProcessingQueueCommandFunction } from './types';
 
 export default class DuMeshTransformer {
   // Keeps track of all commands on the current processing queue
@@ -74,6 +75,36 @@ export default class DuMeshTransformer {
   ///////////////////////////////////////////////////////////////////
   // Public API
   ///////////////////////////////////////////////////////////////////
+
+  /**
+   * Returns a list of material definitions
+   */
+  public getMaterialDefinitions(): MaterialDefinitions {
+    return this.materialDefinitions;
+  }
+
+  /**
+   * Returns a game item id from a glTF material
+   */
+  public getGameItemIdFromGltfMaterial(material: Material): string {
+    return (material.getExtras()['item_id'] as string) || material.getName();
+  }
+
+  /**
+   * Returns a game material based on its game item id
+   */
+  public getGameMaterialFromItemId(itemId: string): MaterialDefinition | null {
+    return this.getMaterialDefinitions().items[itemId] || null;
+  }
+
+  /**
+   * Returns a game material from a glTF material
+   */
+  public getGameMaterialFromGltfMaterial(material: Material): MaterialDefinition | null {
+    return this.getGameMaterialFromItemId(
+      this.getGameItemIdFromGltfMaterial(material)
+    );
+  }
 
   /**
    * Allows for listening for events from the mesh transformer
@@ -164,7 +195,8 @@ export default class DuMeshTransformer {
   ///////////////////////////////////////////////////////////////////
 
   private constructor(
-    private gltfDocument: Document
+    private gltfDocument: Document,
+    private materialDefinitions: MaterialDefinitions,
   ) {
     // Sets game install directory on Windows
     if (os.platform() == 'win32') {
@@ -174,23 +206,46 @@ export default class DuMeshTransformer {
         this.setGameInstallationDirectory(defaultGameInstall);
       }
     }
+
+    // Pre-processes materials so we attach their item ids for later usage
+    gltfDocument.getRoot().listMaterials().forEach((material) => {
+      const itemId = this.getGameItemIdFromGltfMaterial(material);
+      const itemMaterial = itemId
+        ? this.getGameMaterialFromItemId(itemId)
+        : null;
+
+      if (itemId && itemMaterial) {
+        // Renames the material to the right name
+        material.setName(itemMaterial.title);
+
+        // Sets a metadata field with the original item id
+        material.setExtras({
+          ...material.getExtras(),
+          item_id: itemId,
+        })
+      }
+    });
   }
 
   /**
    * Loads a glTF exported mesh from a GLTF Transform Document
    * @returns 
    */
-  public static fromDocument(document: Document): DuMeshTransformer {
-    return new DuMeshTransformer(document);
+  public static async fromDocument(document: Document, materialDefinitions?: MaterialDefinitions): Promise<DuMeshTransformer> {
+    return new DuMeshTransformer(
+      document,
+      materialDefinitions || await fs.readFile(path.join(__dirname, '../../', 'data', 'materials.json')).then((data) => JSON.parse(data.toString())),
+    );
   }
 
   /**
    * Loads a glTF exported mesh from a .gltf/.glb file
    * @returns 
    */
-  public static async fromFile(file: string): Promise<DuMeshTransformer> {
-    return DuMeshTransformer.fromDocument(
-      await DuMeshTransformer.getDocumentIo().read(file)
+  public static async fromFile(file: string, materialDefinitions?: MaterialDefinitions): Promise<DuMeshTransformer> {
+    return await DuMeshTransformer.fromDocument(
+      await DuMeshTransformer.getDocumentIo().read(file),
+      materialDefinitions,
     );
   }
 
@@ -198,13 +253,14 @@ export default class DuMeshTransformer {
    * Loads a glTF exported mesh from a JSON string
    * @returns 
    */
-  public static async fromGltfJson(json: string|JSONDocument): Promise<DuMeshTransformer> {
-    return DuMeshTransformer.fromDocument(
+  public static async fromGltfJson(json: string|JSONDocument, materialDefinitions?: MaterialDefinitions): Promise<DuMeshTransformer> {
+    return await DuMeshTransformer.fromDocument(
       await DuMeshTransformer.getDocumentIo().readJSON(
         (typeof json === 'string')
           ? JSON.parse(json)
           : json
-      )
+      ),
+      materialDefinitions,
     );
   }
 
@@ -212,9 +268,10 @@ export default class DuMeshTransformer {
    * Loads a glTF exported mesh from a GLB binary
    * @returns 
    */
-  public static async fromGlbBinary(binaryData: Uint8Array): Promise<DuMeshTransformer> {
+  public static async fromGlbBinary(binaryData: Uint8Array, materialDefinitions?: MaterialDefinitions): Promise<DuMeshTransformer> {
     return DuMeshTransformer.fromDocument(
-      await DuMeshTransformer.getDocumentIo().readBinary(binaryData)
+      await DuMeshTransformer.getDocumentIo().readBinary(binaryData),
+      materialDefinitions,
     );
   }
 }

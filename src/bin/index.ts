@@ -1,3 +1,5 @@
+import path from 'path';
+
 import app from '../lib/ApplicationWrapper.js';
 import DuMeshTransformer from '../lib/DuMeshTransformer.js';
 import { EventType } from '../lib/types';
@@ -14,8 +16,12 @@ app(async function main(modelPath, customGameDirectory) {
   // Print events
   meshTransformer.events().on(EventType.DEBUG, message => console.log('[DEBUG]', message));
 
+  // Gets the file names
+  const dir = path.dirname(modelPath);
+  const basename = path.basename(modelPath, path.extname(modelPath));
+
   // Processes our mesh as desired
   await meshTransformer
     .withBaseColors()
-    .saveToFile(`${modelPath}.out.glb`, false);
+    .saveToFile(path.join(dir, `${basename}.out.glb`), false);
 });
