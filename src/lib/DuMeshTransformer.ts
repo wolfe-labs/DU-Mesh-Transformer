@@ -12,6 +12,7 @@ import { EventType, MaterialDefinition, MaterialDefinitions, MaterialPair, Proce
 import TexturesTransform from './commands/TexturesTransform';
 import CreateUvMapsTransform from './commands/CreateUvMapsTransfrom';
 import HdrMaterialsTransform from './commands/HdrMaterialsTransform';
+import ElementSeparationTransform from './commands/ElementSeparationTransform';
 
 export default class DuMeshTransformer {
   // Keeps track of all commands on the current processing queue
@@ -25,6 +26,9 @@ export default class DuMeshTransformer {
 
   // Let's store cached data here
   private cachedData: Record<string, any> = {};
+
+  // This is our object's name
+  private objectName: string = 'Unnamed';
 
   ///////////////////////////////////////////////////////////////////
   // Internal API
@@ -81,6 +85,21 @@ export default class DuMeshTransformer {
   ///////////////////////////////////////////////////////////////////
   // Public API
   ///////////////////////////////////////////////////////////////////
+
+  /**
+   * Gets the object name
+   */
+  public getName(): string {
+    return this.objectName;
+  }
+
+  /**
+   * Sets the object name
+   */
+  public setName(name: string): DuMeshTransformer {
+    this.objectName = name;
+    return this;
+  }
 
   /**
    * Gets the underlying glTF document
@@ -279,25 +298,31 @@ export default class DuMeshTransformer {
   }
 
   /**
-   * Applies textures to the model
+   * Applies textures to the model, requires the game directory to be present
    */
   public withTextures() {
     return this.queue(TexturesTransform);
   }
 
   /**
-   * Applies textures to the model
+   * Generates any missing UV maps for the model, via triplanar mapping
    */
   public withUvMaps({ swapYZ = false, textureSizeInMeters = 2.000, voxelOffsetSize = 0.125 } = {}) {
     return this.queue(CreateUvMapsTransform, ...arguments);
   }
 
-
   /**
-   * Applies textures to the model
+   * Applies HDR emissive strenght to the emissive materials
    */
   public withHdrEmissive({ strength = 5.000 } = {}) {
     return this.queue(HdrMaterialsTransform, ...arguments);
+  }
+
+  /**
+   * Attempts to separate elements from honeycomb, to assist when texturing
+   */
+  public withSeparatedElements() {
+    return this.queue(ElementSeparationTransform, ...arguments);
   }
 
   ///////////////////////////////////////////////////////////////////
@@ -360,10 +385,12 @@ export default class DuMeshTransformer {
    * @returns 
    */
   public static async fromFile(file: string, materialDefinitions?: MaterialDefinitions): Promise<DuMeshTransformer> {
-    return await DuMeshTransformer.fromDocument(
-      await DuMeshTransformer.getDocumentIo().read(file),
-      materialDefinitions,
-    );
+    return (
+      await DuMeshTransformer.fromDocument(
+        await DuMeshTransformer.getDocumentIo().read(file),
+        materialDefinitions,
+      )
+    ).setName(path.basename(file, path.extname(file)));
   }
 
   /**

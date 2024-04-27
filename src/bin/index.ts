@@ -27,5 +27,6 @@ app(async function main(modelPath, customGameDirectory) {
     .withTextures()
     .withUvMaps()
     .withHdrEmissive()
+    .withSeparatedElements()
     .saveToFile(path.join(dir, `${basename}.out`), false);
 });
