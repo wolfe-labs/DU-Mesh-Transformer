@@ -316,9 +316,16 @@ export default class DuMeshTransformer {
         this.setGameInstallationDirectory(defaultGameInstall);
       }
     }
+    
+    // Removes default light/camera that are exported along with model
+    for (const node of gltfDocument.getRoot().listNodes()) {
+      if (['Camera', 'Light'].includes(node.getName())) {
+        node.dispose();
+      }
+    }
 
     // Pre-processes materials so we attach their item ids for later usage
-    gltfDocument.getRoot().listMaterials().forEach((material) => {
+    for (const material of gltfDocument.getRoot().listMaterials()) {
       const itemId = this.getGameItemIdFromGltfMaterial(material);
       const itemMaterial = itemId
         ? this.getGameMaterialFromItemId(itemId)
@@ -334,7 +341,7 @@ export default class DuMeshTransformer {
           item_id: itemId,
         })
       }
-    });
+    }
   }
 
   /**
