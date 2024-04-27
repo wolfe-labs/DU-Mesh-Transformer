@@ -1,18 +1,19 @@
 {
-  "name": "@wolfe-labs/du-gltf-texture-converter",
-  "version": "0.0.1",
-  "description": "Enhances glTF files exported by Dual Universe's Mesh Exporter so they have textures applied to them",
+  "name": "@wolfe-labs/du-gltf",
+  "version": "1.0.0",
+  "description": "Enhances glTF files exported by Dual Universe's Mesh Exporter so they have proper colors and textures applied to them",
   "main": "lib/index.js",
-  "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node bin/index.js",
+    "build": "npx tsc",
+    "dev": "npx tsc --watch"
   },
   "bin": {
-    "du-gltf": "index.js"
+    "du-gltf": "bin/index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wolfe-labs/DU-GLTF-Texture-Converter.git"
+    "url": "git+https://github.com/wolfe-labs/DU-Mesh-Transformer.git"
   },
   "keywords": [
     "dual",
@@ -24,9 +25,9 @@
   "author": "",
   "license": "Unlicense",
   "bugs": {
-    "url": "https://github.com/wolfe-labs/DU-GLTF-Texture-Converter/issues"
+    "url": "https://github.com/wolfe-labs/DU-Mesh-Transformer/issues"
   },
-  "homepage": "https://github.com/wolfe-labs/DU-GLTF-Texture-Converter#readme",
+  "homepage": "https://github.com/wolfe-labs/DU-Mesh-Transformer#readme",
   "dependencies": {
     "@gltf-transform/core": "^3.10.1",
     "@gltf-transform/extensions": "^3.10.1",
@@ -35,5 +36,9 @@
     "gl-matrix": "^3.4.3",
     "jimp": "^0.22.12",
     "vector-math": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/gl-matrix": "^3.2.0",
+    "typescript": "^5.4.5"
   }
 }

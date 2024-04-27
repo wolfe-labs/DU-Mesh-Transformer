@@ -1,27 +1,49 @@
 import Jimp from 'jimp';
 
+export type ColorVec3 = [number, number, number];
+export type ColorVec4 = [number, number, number, number];
+export type ColorAsVec = ColorVec3 | ColorVec4;
+
+export type ColorRGB = { r: number, g: number, b: number };
+export type ColorRGBA = { r: number, g: number, b: number, a: number };
+export type ColorAsObject = ColorRGB | ColorRGBA;
+
+export type ColorAny = ColorAsVec | ColorAsObject;
+
+export type TransformCallback = (color: ColorVec4, { x, y }: { x: number, y: number }) => ColorAny;
+
+export type ImageMimeType = 'image/jpeg' | 'image/png';
+
 export default class RgbaBuffer {
-  constructor(width, height, buffer) {
-    this.width = width;
-    this.height = height;
-    this.buffer = buffer;
+  constructor(
+    private width: number,
+    private height: number,
+    private buffer: Buffer
+  ) {}
+
+  public getWidth(): number {
+    return this.width;
   }
 
-  getPixelIndex(x, y) {
+  public getHeight(): number {
+    return this.height;
+  }
+
+  public getPixelIndex(x: number, y: number) {
     x = x - 1;
     y = y - 1;
     return this.width * y + x;
   }
 
-  getPixelOffsetByIndex(index) {
+  public getPixelOffsetByIndex(index: number) {
     return index * 4;
   }
 
-  getPixelOffset(x, y) {
-    return this.getPixelOffsetByIndex(getPixelIndex(x, y));
+  public getPixelOffset(x: number, y: number) {
+    return this.getPixelOffsetByIndex(this.getPixelIndex(x, y));
   }
 
-  getPixelByIndex(index) {
+  public getPixelByIndex(index: number): ColorVec4 {
     const offset = this.getPixelOffsetByIndex(index);
     return [
       this.buffer[offset + 0],
@@ -31,12 +53,13 @@ export default class RgbaBuffer {
     ];
   }
 
-  getPixel(x, y) {
+  public getPixel(x: number, y: number): ColorVec4 {
     return this.getPixelByIndex(this.getPixelIndex(x, y));
   }
 
-  setPixelByIndex(index, rgba) {
+  public setPixelByIndex(index: number, rgba: ColorAny) {
     if (!Array.isArray(rgba) && typeof rgba == 'object') {
+      // @ts-ignore
       rgba = [rgba.r, rgba.g, rgba.b, rgba.a || 255];
     }
 
@@ -49,11 +72,11 @@ export default class RgbaBuffer {
     this.buffer[offset + 3] = a || 255;
   }
 
-  setPixel(x, y, rgba) {
+  public setPixel(x: number, y: number, rgba: ColorAny) {
     return this.setPixelByIndex(this.getPixelIndex(x, y), rgba);
   }
 
-  transformArea(x, y, width, height, callback) {
+  public transformArea(x: number, y: number, width: number, height: number, callback: TransformCallback) {
     const finalX = Math.min(x + width, this.width);
     const finalY = Math.min(y + height, this.height);
 
@@ -77,7 +100,7 @@ export default class RgbaBuffer {
     }
   }
 
-  transform(callback) {
+  public transform(callback: TransformCallback) {
     this.transformArea(1, 1, this.width, this.height, callback);
   }
 
@@ -90,15 +113,15 @@ export default class RgbaBuffer {
     return image;
   }
 
-  async toConvertedBuffer(mime) {
+  async toConvertedBuffer(mime: ImageMimeType) {
     return await (await this.toJimpImage()).getBufferAsync(mime);
   }
 
-  static fromJimpImage(image) {
+  static fromJimpImage(image: Jimp) {
     return new this(image.getWidth(), image.getHeight(), image.bitmap.data);
   }
 
-  static async fromFileBuffer(buffer) {
+  static async fromFileBuffer(buffer: Buffer) {
     return this.fromJimpImage(
       await Jimp.create(buffer)
     );

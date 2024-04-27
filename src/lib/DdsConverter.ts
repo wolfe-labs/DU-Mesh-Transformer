@@ -2,7 +2,7 @@ import { parseDDSHeader, decodeImage } from 'dds-ktx-parser';
 import RgbaBuffer from './RgbaBuffer.js';
 
 export default class DdsConverter {
-  static convertToRgba(ddsStream) {
+  static convertToRgba(ddsStream: Buffer) {
     const dds = parseDDSHeader(ddsStream);
 
     if (!dds) {
@@ -14,11 +14,11 @@ export default class DdsConverter {
     return new RgbaBuffer(layer.shape.width, layer.shape.height, decodeImage(ddsStream, dds.format, layer));
   }
 
-  static async convertToJimp(ddsStream) {
+  static async convertToJimp(ddsStream: Buffer) {
     return await this.convertToRgba(ddsStream).toJimpImage();
   }
 
-  static async convertToPng(ddsStream) {
+  static async convertToPng(ddsStream: Buffer) {
     return (await this.convertToJimp(ddsStream)).getBufferAsync('image/png');
   }
 }
