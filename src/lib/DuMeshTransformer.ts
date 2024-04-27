@@ -65,6 +65,8 @@ export default class DuMeshTransformer {
    * Processes the current command queue, transforming the document
    */
   private async processQueue() {
+    this.notify(EventType.TRANSFORM_START);
+
     // Copies our commands and clears the queue to avoid double processing
     const queue = [...this.pendingCommands];
     this.pendingCommands = [];
@@ -72,7 +74,10 @@ export default class DuMeshTransformer {
     // Processes each command in sequence
     for (const command of queue) {
       await command.fn.apply(this, [{ document: this.gltfDocument, transformer: this }, ...command.args]);
+      this.notify(EventType.TRANSFORM_NEXT);
     }
+    
+    this.notify(EventType.TRANSFORM_FINISH);
   }
 
   /**

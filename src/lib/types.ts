@@ -9,6 +9,9 @@ export type ProcessingQueueCommand = {
 };
 
 export enum EventType {
+  TRANSFORM_START = 'transform_start',
+  TRANSFORM_NEXT = 'transform_next',
+  TRANSFORM_FINISH = 'transform_finish',
   DEBUG = 'debug',
   WARNING = 'warning',
 };
