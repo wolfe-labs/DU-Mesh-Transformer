@@ -11,6 +11,7 @@ import BaseColorsTransform from './commands/BaseColorsTransform';
 import { EventType, MaterialDefinition, MaterialDefinitions, MaterialPair, ProcessingQueueCommand, ProcessingQueueCommandFunction } from './types';
 import TexturesTransform from './commands/TexturesTransform';
 import CreateUvMapsTransform from './commands/CreateUvMapsTransfrom';
+import HdrMaterialsTransform from './commands/HdrMaterialsTransform';
 
 export default class DuMeshTransformer {
   // Keeps track of all commands on the current processing queue
@@ -286,6 +287,14 @@ export default class DuMeshTransformer {
    */
   public withUvMaps({ swapYZ = false, textureSizeInMeters = 2.000, voxelOffsetSize = 0.125 } = {}) {
     return this.queue(CreateUvMapsTransform, ...arguments);
+  }
+
+
+  /**
+   * Applies textures to the model
+   */
+  public withHdrEmissive({ strength = 5.000 } = {}) {
+    return this.queue(HdrMaterialsTransform, ...arguments);
   }
 
   ///////////////////////////////////////////////////////////////////

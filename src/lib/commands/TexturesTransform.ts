@@ -1,7 +1,7 @@
 import path from 'path';
 import { existsSync as fileExists, promises as fs } from 'fs';
 
-import { Texture } from '@gltf-transform/core';
+import { Texture, vec3 } from '@gltf-transform/core';
 
 import {
   ProcessingQueueCommandParameters as CommandParams,
@@ -92,7 +92,7 @@ async function getGameTextures(transformer: DuMeshTransformer, gameMaterial: Mat
   });
 }
 
-export default async function TexturesTransform({ document, transformer }: CommandParams) {
+export default async function TexturesTransform({ transformer }: CommandParams) {
   for (const { material, gameMaterial } of transformer.getGltfMaterialsWithGameMaterials()) {
     transformer.notify(EventType.DEBUG, `Processing textures for "${material.getName()}"...`);
     
@@ -105,5 +105,19 @@ export default async function TexturesTransform({ document, transformer }: Comma
     material.setMetallicRoughnessTexture(textures.mrao);
     material.setOcclusionTexture(textures.mrao);
     material.setEmissiveTexture(textures.emissive);
+
+    // Applies the right material factors
+    if (textures.emissive) {
+      // Handles any luminescent materials we might have
+      // They don't reflect light and are "flat" or "fullbright", so we set metallic and roughness for that
+      material.setEmissiveFactor(material.getBaseColorFactor().slice(0, 3) as vec3);
+      material.setMetallicFactor(0.000);
+      material.setRoughnessFactor(1.000);
+    } else if (textures.mrao) {
+      // When a MRAO texture is present, let's set factors to 1.000 so we only use the texture data
+      // The glTF seems to have built-in factors, but they don't seem to be reliable
+      material.setMetallicFactor(1.000);
+      material.setRoughnessFactor(1.000);
+    }
   }
 }
