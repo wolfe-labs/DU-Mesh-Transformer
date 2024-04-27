@@ -3,12 +3,12 @@
   "version": "0.0.1",
   "description": "Enhances glTF files exported by Dual Universe's Mesh Exporter so they have textures applied to them",
   "main": "lib/index.js",
-  "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node dist/bin/index.js",
+    "dev": "npx tsc --watch"
   },
   "bin": {
-    "du-gltf": "index.js"
+    "du-gltf": "dist/bin/index.js"
   },
   "repository": {
     "type": "git",
@@ -35,5 +35,8 @@
     "gl-matrix": "^3.4.3",
     "jimp": "^0.22.12",
     "vector-math": "^1.1.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
   }
 }
