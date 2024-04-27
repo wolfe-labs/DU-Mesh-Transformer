@@ -1,10 +1,11 @@
 {
   "name": "@wolfe-labs/du-gltf-texture-converter",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Enhances glTF files exported by Dual Universe's Mesh Exporter so they have textures applied to them",
   "main": "lib/index.js",
   "scripts": {
     "start": "node dist/bin/index.js",
+    "build": "npx tsc",
     "dev": "npx tsc --watch"
   },
   "bin": {
