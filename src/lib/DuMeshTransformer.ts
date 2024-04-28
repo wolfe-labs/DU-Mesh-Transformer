@@ -13,6 +13,7 @@ import TexturesTransform from './commands/TexturesTransform';
 import CreateUvMapsTransform from './commands/CreateUvMapsTransfrom';
 import HdrMaterialsTransform from './commands/HdrMaterialsTransform';
 import ElementSeparationTransform from './commands/ElementSeparationTransform';
+import Package from './Package';
 
 export default class DuMeshTransformer {
   // Keeps track of all commands on the current processing queue
@@ -381,7 +382,7 @@ export default class DuMeshTransformer {
   public static async fromDocument(document: Document, materialDefinitions?: MaterialDefinitions): Promise<DuMeshTransformer> {
     return new DuMeshTransformer(
       document,
-      materialDefinitions || await fs.readFile(path.join(__dirname, '../../', 'data', 'materials.json')).then((data) => JSON.parse(data.toString())),
+      materialDefinitions || await fs.readFile(path.join(Package.getDataDirectory(), 'materials.json')).then((data) => JSON.parse(data.toString())),
     );
   }
 

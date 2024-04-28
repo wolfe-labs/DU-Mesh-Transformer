@@ -2,6 +2,7 @@
 
 import path from 'path';
 
+import Package from '../lib/Package.js';
 import app from '../lib/ApplicationWrapper.js';
 import DuMeshTransformer from '../lib/DuMeshTransformer.js';
 import { EventType } from '../lib/types';
@@ -10,7 +11,7 @@ app(async function main(modelPath, customGameDirectory) {
   const isDebugEnabled = !!JSON.parse(process.env.debug || 'false');
 
   // Intro
-  const introText = `glTF Mesh Converter for Dual Universe by Wolfe Labs`;
+  const introText = `glTF Mesh Converter for Dual Universe v${Package.getVersion()} by Wolfe Labs`;
   console.log(`+-${'-'.repeat(introText.length)}-+`)
   console.log(`| ${introText} |`)
   console.log(`+-${'-'.repeat(introText.length)}-+`)
