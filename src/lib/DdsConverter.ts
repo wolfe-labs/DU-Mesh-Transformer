@@ -1,5 +1,5 @@
 import { parseDDSHeader, decodeImage } from 'dds-ktx-parser';
-import RgbaBuffer from './RgbaBuffer.js';
+import RgbaBuffer from './RgbaBuffer';
 
 export default class DdsConverter {
   static convertToRgba(ddsStream: Buffer) {
