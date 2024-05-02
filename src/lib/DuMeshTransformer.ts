@@ -413,7 +413,7 @@ export default class DuMeshTransformer {
       // Let's figure out the right core based on the vertex min/max values
       const baseNode = gltfDocument.getRoot().listNodes().find(node => !!node.getMesh());
       if (baseNode) {
-        const baseMesh = baseNode.getMesh();
+        const baseMesh = baseNode.getMesh()!;
         const basePrimitive = baseMesh.listPrimitives()[0];
         const vertexPositions = basePrimitive.getAttribute('POSITION')!;
 
