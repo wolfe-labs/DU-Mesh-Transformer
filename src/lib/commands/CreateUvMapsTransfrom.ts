@@ -55,7 +55,7 @@ function calculateTriangleNormal(vertexPositions: TriangleVertices): vec3 {
   return result.unitVector ? vectorToArray(result.unitVector) : [0, 0, 0];
 }
 
-function getPlaneCoordinatesFrom3dPoint(point3d: vec3, direction: vec3, swapYZ: boolean) {
+function getPlaneCoordinatesFrom3dPoint(point3d: vec3, direction: vec3, swapYZ: boolean, offsetSize: number) {
   // Those are our mapping of axis to xyz indexes
   const axis = { x: 0, y: 1, z: 2 };
 
@@ -69,13 +69,23 @@ function getPlaneCoordinatesFrom3dPoint(point3d: vec3, direction: vec3, swapYZ: 
 
   // Calculate which of the xyz indexes to use for X and Y coordinates
   // We also need to flip the coordinates in some cases
-  let axisX, axisY, axisXSign = 1, axisYSign = 1;
+  let axisX, axisY, axisXSign = 1, axisYSign = 1, axisXOffset = 0, axisYOffset = 0;
   switch (depthAxis) {
     // Lateral view
     case axis.x:
-      axisX = 2;
-      axisY = 1;
-      axisXSign = -1;
+      axisX = 1;
+      axisY = 2;
+      axisYSign = -1;
+      axisXOffset = -2 * offsetSize;
+
+      // Fixes issues caused by YZ swap
+      if (swapYZ) {
+        axisX = 2;
+        axisY = 1;
+        axisXSign = -1;
+        axisXOffset = 0;
+      }
+
       break;
 
     // Vertical view
@@ -83,14 +93,34 @@ function getPlaneCoordinatesFrom3dPoint(point3d: vec3, direction: vec3, swapYZ: 
       axisX = 0;
       axisY = 2;
       axisYSign = -1;
+
+      // Fixes issues caused by YZ swap
+      if (swapYZ) {
+        axisXSign = -1;
+        axisYSign = 1;
+      }
+
       break;
 
     // Longitudinal view
     case axis.z:
       axisX = 0;
       axisY = 1;
+      axisYSign = -1;
+      // Fixes issues caused by YZ swap
+      if (swapYZ) {
+        axisXSign = -1;
+        axisYOffset = 0;
+      }
+
       break;
   }
+
+  // Builds the final X and Y coordinates from our 3D point
+  return [
+    axisXYSign * axisXSign * point3d[axisX!] + axisXOffset,
+    axisXYSign * axisYSign * point3d[axisY!] + axisYOffset,
+  ];
 
   // Builds the final X and Y coordinates from our 3D point
   return [
@@ -155,7 +185,7 @@ export default async function CreateUvMapsTransform({ document, transformer }: C
           vertexPositions[i][2] -= voxelOffsetSize;
 
           // Gets the XY coordinates from this vertex on a plane that matches its face direction
-          const uv = getPlaneCoordinatesFrom3dPoint(vertexPositions[i], normalDirection, swapYZ)
+          const uv = getPlaneCoordinatesFrom3dPoint(vertexPositions[i], normalDirection, swapYZ, voxelOffsetSize)
             .map(xy => xy / textureSizeInMeters);
 
           // For UV space, we need to flip the Y coordinate, as higher numbers mean lower in the texture

@@ -8,6 +8,7 @@ import {
   ProcessingQueueCommandParameters as CommandParams,
   EventType as EventType
 } from '../types';
+import { vec2 } from 'gl-matrix';
 
 export default async function ElementSeparationTransform({ document, transformer }: CommandParams) {
   // Ensure we only have one Mesh for certain operations
@@ -85,6 +86,9 @@ export default async function ElementSeparationTransform({ document, transformer
 
       // Let's also load the raw vertex positions
       const primitiveVertexPositions = primitive.getAttribute('POSITION')!;
+
+      // Let's load the UV data for those vertices
+      const primitiveVertexUV = primitive.getAttribute('TEXCOORD_0')!;
 
       // Helper function to get a hash of the vertex position
       function getVertexPositionHash(vertexId: number): string {
@@ -177,6 +181,10 @@ export default async function ElementSeparationTransform({ document, transformer
             .setArray(new Float32Array(newVertexCount * 3))
             .setType(Accessor.Type.VEC3)
             .setBuffer(documentBuffer);
+          const newPrimitiveVertexUVs = document.createAccessor()
+            .setArray(new Float32Array(newVertexCount * 2))
+            .setType(Accessor.Type.VEC2)
+            .setBuffer(documentBuffer);
 
           // Builds the Primitive's actual vertex/triangle data
           [...triangleIds].forEach((triangleId, idx) => {
@@ -190,6 +198,11 @@ export default async function ElementSeparationTransform({ document, transformer
               primitiveVertexPositions.getElement(originalIndices[1], []),
               primitiveVertexPositions.getElement(originalIndices[2], []),
             ];
+            const originalVertexUVs = [
+              primitiveVertexUV.getElement(originalIndices[0], []),
+              primitiveVertexUV.getElement(originalIndices[1], []),
+              primitiveVertexUV.getElement(originalIndices[2], []),
+            ];
 
             originalVertexPositions.forEach((position, i) => {
               const index = triangleSize * idx + i;
@@ -197,10 +210,9 @@ export default async function ElementSeparationTransform({ document, transformer
               newPrimitiveIndices.setScalar(index, index);
             });
 
-            originalVertexPositions.forEach((position, i) => {
+            originalVertexUVs.forEach((uv, i) => {
               const index = triangleSize * idx + i;
-              newPrimitiveVertexPositions.setElement(index, position);
-              newPrimitiveIndices.setScalar(index, index);
+              newPrimitiveVertexUVs.setElement(index, uv);
             });
           });
 
@@ -209,6 +221,7 @@ export default async function ElementSeparationTransform({ document, transformer
           const newPrimitive = document.createPrimitive()
             .setName(newName)
             .setAttribute('POSITION', newPrimitiveVertexPositions)
+            .setAttribute('TEXCOORD_0', newPrimitiveVertexUVs)
             .setIndices(newPrimitiveIndices)
             .setMaterial(defaultMaterial);
           const newMesh = document.createMesh()

@@ -4,16 +4,17 @@ import { env } from 'process';
 import { existsSync as fileExists, promises as fs } from 'fs';
 import EventEmitter from 'node:events';
 
-import { Document, JSONDocument, Material, NodeIO, Root } from '@gltf-transform/core';
+import { Document, JSONDocument, Material, NodeIO, Root, vec3 } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import BaseColorsTransform from './commands/BaseColorsTransform';
 
-import { EventType, MaterialDefinition, MaterialDefinitions, MaterialPair, ProcessingQueueCommand, ProcessingQueueCommandFunction } from './types';
+import { CoreSize, EventType, MaterialDefinition, MaterialDefinitions, MaterialPair, MeshType, ProcessingQueueCommand, ProcessingQueueCommandFunction } from './types';
 import TexturesTransform from './commands/TexturesTransform';
 import CreateUvMapsTransform from './commands/CreateUvMapsTransfrom';
 import HdrMaterialsTransform from './commands/HdrMaterialsTransform';
 import ElementSeparationTransform from './commands/ElementSeparationTransform';
 import Package from './Package';
+import TranslateTransform from './commands/TranslateTransfrom';
 
 export default class DuMeshTransformer {
   // Keeps track of all commands on the current processing queue
@@ -30,6 +31,12 @@ export default class DuMeshTransformer {
 
   // This is our object's name
   private objectName: string = 'Unnamed';
+
+  // The construct type
+  private type: MeshType = MeshType.NORMAL;
+
+  // The construct size
+  private coreSize: number;
 
   ///////////////////////////////////////////////////////////////////
   // Internal API
@@ -292,6 +299,30 @@ export default class DuMeshTransformer {
     this.cachedData[category][key] = data;
   }
 
+  /**
+   * Gets the core size in meters
+   */
+  public getCoreSizeInMeters(): number
+  {
+    return this.coreSize;
+  }
+
+  /**
+   * Gets the core size in voxels
+   */
+  public getCoreSizeInVoxels(): number
+  {
+    return this.coreSize * 4 - 1;
+  }
+
+  /**
+   * Gets the mesh type
+   */
+  public getMeshType(): MeshType
+  {
+    return this.type;
+  }
+
   ///////////////////////////////////////////////////////////////////
   // Transforms
   ///////////////////////////////////////////////////////////////////
@@ -313,8 +344,15 @@ export default class DuMeshTransformer {
   /**
    * Generates any missing UV maps for the model, via triplanar mapping
    */
-  public withUvMaps({ swapYZ = false, textureSizeInMeters = 2.000, voxelOffsetSize = 0.125 } = {}) {
-    return this.queue(CreateUvMapsTransform, ...arguments);
+  public withUvMaps({ swapYZ = undefined, textureSizeInMeters = 2.000, voxelOffsetSize = 0.125 }: { swapYZ?: boolean, textureSizeInMeters?: number, voxelOffsetSize?: number } = {}) {
+    // Sorts default swapping
+    if (typeof swapYZ !== 'boolean') {
+      swapYZ = (this.getMeshType() === MeshType.EXTERNAL)
+        ? true
+        : false;
+    }
+    
+    return this.queue(CreateUvMapsTransform, { swapYZ, textureSizeInMeters, voxelOffsetSize });
   }
 
   /**
@@ -329,6 +367,13 @@ export default class DuMeshTransformer {
    */
   public withSeparatedElements() {
     return this.queue(ElementSeparationTransform, ...arguments);
+  }
+
+  /**
+   * Translates (moves) the meshes by an amount 
+   */
+  public withTranslation(translation: vec3) {
+    return this.queue(TranslateTransform, ...arguments);
   }
 
   ///////////////////////////////////////////////////////////////////
@@ -352,6 +397,74 @@ export default class DuMeshTransformer {
     for (const node of gltfDocument.getRoot().listNodes()) {
       if (['Camera', 'Light'].includes(node.getName())) {
         node.dispose();
+      }
+    }
+
+    // This is our main mesh
+    const mainNode = gltfDocument.getRoot().listNodes()[0];
+
+    // Gets the core size
+    this.coreSize = Math.abs(Math.max(...mainNode.getTranslation()));
+
+    // If we don't have a valid core size, set type as external, as it might not even be a valid Mesh Exporter file
+    if (this.coreSize <= 0) {
+      this.type = MeshType.EXTERNAL;
+
+      // Let's figure out the right core based on the vertex min/max values
+      const baseNode = gltfDocument.getRoot().listNodes().find(node => !!node.getMesh());
+      if (baseNode) {
+        const baseMesh = baseNode.getMesh();
+        const basePrimitive = baseMesh.listPrimitives()[0];
+        const vertexPositions = basePrimitive.getAttribute('POSITION')!;
+
+        let posAvg: number[] = [0, 0, 0];
+        const factor = 1 / vertexPositions.getCount();
+        for (let idx = 0; idx < vertexPositions.getCount(); idx++) {
+          const vertex = vertexPositions.getElement(idx, [])
+          const min = Math.min(...vertex);
+          const max = Math.max(...vertex);
+
+          posAvg[0] += vertex[0] * factor;
+          posAvg[1] += vertex[1] * factor;
+          posAvg[2] += vertex[2] * factor;
+        }
+
+        let posMin: number | undefined, posMax: number | undefined;
+        for (let idx = 0; idx < vertexPositions.getCount(); idx++) {
+          const vertex = vertexPositions.getElement(idx, [])
+          vertex[0] -= posAvg[0];
+          vertex[1] -= posAvg[1];
+          vertex[2] -= posAvg[2];
+
+          const min = Math.min(...vertex);
+          const max = Math.max(...vertex);
+
+          posMin = (posMin !== undefined)
+            ? Math.min(posMin, min)
+            : min;
+
+          posMax = (posMax !== undefined)
+            ? Math.max(posMax, max)
+            : max;
+        }
+
+        // Let's estimate the size here
+        const sizeDelta = (posMax || 0) - (posMin || 0);
+        for (const coreSize of [CoreSize.XS, CoreSize.S, CoreSize.M, CoreSize.L]) {
+          this.coreSize = coreSize;
+
+          if (sizeDelta >= coreSize) {
+            continue;
+          }
+
+          break;
+        }
+
+        // Applies centering, if not already provided
+        const baseTranslation = baseNode.getTranslation();
+        if (baseTranslation[0] === 0 && baseTranslation[1] === 0 && baseTranslation[2] === 0) {
+          this.withTranslation([-this.coreSize, -this.coreSize, -this.coreSize]);
+        }
       }
     }
 

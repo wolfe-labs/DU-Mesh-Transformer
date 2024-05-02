@@ -37,3 +37,16 @@ export type MaterialDefinitions = {
   items: Record<string, MaterialDefinition>;
 };
 export type MaterialPair = { material: Material, gameMaterial: MaterialDefinition };
+
+export enum MeshType {
+  EXTERNAL,
+  LEGACY,
+  NORMAL,
+}
+
+export enum CoreSize {
+  XS = 16,
+  S = 32,
+  M = 64,
+  L = 128,
+};
