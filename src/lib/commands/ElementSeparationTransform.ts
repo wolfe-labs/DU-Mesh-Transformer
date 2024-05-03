@@ -91,6 +91,9 @@ export default async function ElementSeparationTransform({ document, transformer
     // Let's also load the raw vertex positions
     const primitiveVertexPositions = primitive.getAttribute('POSITION')!;
 
+    // Let's also load vertex normals
+    const primitiveVertexNormals = primitive.getAttribute('NORMAL')!;
+
     // Let's load the UV data for those vertices
     const primitiveVertexUV = primitive.getAttribute('TEXCOORD_0')!;
 
@@ -207,6 +210,10 @@ export default async function ElementSeparationTransform({ document, transformer
           .setArray(new Float32Array(newVertexCount * 3))
           .setType(Accessor.Type.VEC3)
           .setBuffer(documentBuffer);
+        const newPrimitiveVertexNormals = document.createAccessor()
+          .setArray(new Float32Array(newVertexCount * 3))
+          .setType(Accessor.Type.VEC3)
+          .setBuffer(documentBuffer);
         const newPrimitiveVertexUVs = document.createAccessor()
           .setArray(new Float32Array(newVertexCount * 2))
           .setType(Accessor.Type.VEC2)
@@ -230,6 +237,11 @@ export default async function ElementSeparationTransform({ document, transformer
               primitiveVertexPositions.getElement(originalIndices[1], []),
               primitiveVertexPositions.getElement(originalIndices[2], []),
             ];
+            const originalVertexNormals = [
+              primitiveVertexNormals.getElement(originalIndices[0], []),
+              primitiveVertexNormals.getElement(originalIndices[1], []),
+              primitiveVertexNormals.getElement(originalIndices[2], []),
+            ];
             const originalVertexUVs = [
               primitiveVertexUV.getElement(originalIndices[0], []),
               primitiveVertexUV.getElement(originalIndices[1], []),
@@ -239,6 +251,12 @@ export default async function ElementSeparationTransform({ document, transformer
             originalVertexPositions.forEach((position, i) => {
               const index = triangleSize * idx + i;
               newPrimitiveVertexPositions.setElement(index, position);
+              newPrimitiveIndices.setScalar(index, index);
+            });
+
+            originalVertexNormals.forEach((normal, i) => {
+              const index = triangleSize * idx + i;
+              newPrimitiveVertexNormals.setElement(index, normal);
               newPrimitiveIndices.setScalar(index, index);
             });
 
@@ -258,6 +276,7 @@ export default async function ElementSeparationTransform({ document, transformer
       const newPrimitive = document.createPrimitive()
         .setName(newName)
         .setAttribute('POSITION', newPrimitiveVertexPositions)
+        .setAttribute('NORMAL', newPrimitiveVertexNormals)
         .setAttribute('TEXCOORD_0', newPrimitiveVertexUVs)
         .setIndices(newPrimitiveIndices)
         .setMaterial(defaultMaterial);
