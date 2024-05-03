@@ -42,19 +42,6 @@ function getFaceDirection(normal: vec3): vec3 {
   return closestDirection;
 }
 
-function calculateTriangleNormal(vertexPositions: TriangleVertices): vec3 {
-  const vectors = {
-    a: new Vector(...vertexPositions[0]),
-    b: new Vector(...vertexPositions[2]),
-    c: new Vector(...vertexPositions[1]),
-  };
-
-  const result = vectors.b.Subtract(vectors.a)
-    .Cross(vectors.b.Subtract(vectors.c));
-
-  return result.unitVector ? vectorToArray(result.unitVector) : [0, 0, 0];
-}
-
 function getPlaneCoordinatesFrom3dPoint(point3d: vec3, direction: vec3, swapYZ: boolean, offsetSize: number) {
   // Those are our mapping of axis to xyz indexes
   const axis = { x: 0, y: 1, z: 2 };
@@ -121,12 +108,6 @@ function getPlaneCoordinatesFrom3dPoint(point3d: vec3, direction: vec3, swapYZ: 
     axisXYSign * axisXSign * point3d[axisX!] + axisXOffset,
     axisXYSign * axisYSign * point3d[axisY!] + axisYOffset,
   ];
-
-  // Builds the final X and Y coordinates from our 3D point
-  return [
-    axisXYSign * axisXSign * sign * point3d[axisX!],
-    axisXYSign * axisYSign * point3d[axisY!],
-  ];
 }
 
 export default async function CreateUvMapsTransform({ document, transformer }: CommandParams, { swapYZ = false, textureSizeInMeters = 2.000, voxelOffsetSize = 0.125 } = {}) {
@@ -156,6 +137,7 @@ export default async function CreateUvMapsTransform({ document, transformer }: C
       // Gets list of vertices
       const primitiveVertexIndex = primitive.getIndices()!;
       const primitiveVertexPosition = primitive.getAttribute('POSITION')!;
+      const primitiveVertexNormal = primitive.getAttribute('NORMAL')!;
 
       // And let's create our UV map and set it to our primitive
       const primitiveVertexUV = document.createAccessor()
@@ -172,10 +154,7 @@ export default async function CreateUvMapsTransform({ document, transformer }: C
           primitiveVertexIndex.getScalar(idx + 2),
         ];
         const vertexPositions = vertexIds.map(id => primitiveVertexPosition.getElement(id, [])) as TriangleVertices;
-
-        // Calculate our triangle's normal
-        const normal = calculateTriangleNormal(vertexPositions);
-        const normalDirection = getFaceDirection(normal);
+        const vertexNormals = vertexIds.map(id => primitiveVertexNormal.getElement(id, [])) as TriangleVertices;
         
         // Calculates and sets UV coordinates for each vertex
         for (let i = 0; i < 3; i++) {
@@ -185,7 +164,7 @@ export default async function CreateUvMapsTransform({ document, transformer }: C
           vertexPositions[i][2] -= voxelOffsetSize;
 
           // Gets the XY coordinates from this vertex on a plane that matches its face direction
-          const uv = getPlaneCoordinatesFrom3dPoint(vertexPositions[i], normalDirection, swapYZ, voxelOffsetSize)
+          const uv = getPlaneCoordinatesFrom3dPoint(vertexPositions[i], getFaceDirection(vertexNormals[i]), swapYZ, voxelOffsetSize)
             .map(xy => xy / textureSizeInMeters);
 
           // For UV space, we need to flip the Y coordinate, as higher numbers mean lower in the texture
