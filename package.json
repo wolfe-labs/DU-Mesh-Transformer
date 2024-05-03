@@ -1,6 +1,6 @@
 {
   "name": "@wolfe-labs/du-gltf",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Enhances glTF files exported by Dual Universe's Mesh Exporter so they have proper colors and textures applied to them",
   "main": "lib/index.js",
   "scripts": {
