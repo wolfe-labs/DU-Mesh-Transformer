@@ -1,5 +1,23 @@
+![DU Mesh Transformer Banner](.github/Banner.png)
+
 # Mesh Transformer for Dual Universe (du-gltf)
 🎨 Enhances glTF files exported by Dual Universe's Mesh Exporter so they have proper colors and textures applied to them
+
+## What it is and what it can (or can't) do
+
+This project is mainly intended to allow players who exported their in-game constructs as glTF to apply certain corrections to their meshes so they can be properly imported into 3D modelling software, such as Blender, etc.
+
+The main reason for this is that, by default, the game's official Mesh Exporter seems to export the materials with missing textures and incorrect color/metallic/roughness factors. We are able to read those files and reconstruct the meshes with the right material data (which, of course, requires having the game installed), export them as new files.
+
+We also do some extra processing on the meshes, reconstructing UV maps (for texture application) similar to how the game does it (based on the object coordinates) and also try to isolate elements from the rest of the voxel mesh, allowing for those element meshes to have some other material applied to them.
+
+A limitation we have is that elements are not fixed automatically, as those have completely separate sets of meshes/textures/UVs, etc, and we don't have access to those files, nor have any metadata to properly apply the textures or position the meshes.
+
+Here's an example of how the originally exported mesh looks like, compared to the processed mesh, and the in-game construct:
+
+![DU Mesh Transformer Banner](.github/sample.jpg)
+
+Some things such as colors may not look 100% identical to what they do in-game, this is mainly due to differences between the game's and other software rendering engines, environments, etc.
 
 ## Installation and Usage
 
